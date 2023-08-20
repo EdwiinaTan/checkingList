@@ -16,3 +16,6 @@ CREATE TABLE users (
 INSERT INTO
   list (id, user_email, title, progress, date)
   VALUES (1, 'test@test.com', 'holiday', 3, '19/09/23');
+
+DELETE FROM list
+  WHERE id = 1

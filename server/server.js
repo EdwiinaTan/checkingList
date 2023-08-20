@@ -7,12 +7,13 @@ const pool = require("./db")
 
 app.use(cors())
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
   res.send(`Server port: ${process.env.PORT}`)
 })
 
-app.get("/list", async (req, res) => {
+app.get("/list", async (_, res) => {
   try {
     const list = await pool.query("SELECT * FROM list")
     res.json(list.rows)
@@ -48,6 +49,30 @@ app.post("/list", async (req, res) => {
     console.log("newList", newList)
     res.json(newList)
   } catch (err) {
+    console.error(err)
+  }
+})
+
+app.put("/list/:id", async (req, res) => {
+  const { id } = req.params
+  const { user_email, title, progress, date } = req.body
+  try {
+    const editList = await pool.query(
+      "UPDATE list SET user_email=$1, title=$2, progress=$3, date=$4 WHERE id=$5",
+      [user_email, title, progress, date, id]
+    )
+    res.json(editList)
+  } catch (error) {
+    console.error(err)
+  }
+})
+
+app.delete("/list/:id", async (req, res) => {
+  const { id } = req.params
+  try {
+    const removeItem = await pool.query("DELETE FROM list WHERE id=$1", [id])
+    res.json(removeItem)
+  } catch (error) {
     console.error(err)
   }
 })

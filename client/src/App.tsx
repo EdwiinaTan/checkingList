@@ -23,12 +23,11 @@ const App = () => {
 
   const getData = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/list`)
-      console.log("resss", res)
+      const res = await fetch(
+        `${import.meta.env.VITE_REACT_APP_SERVERURL}/list`
+      )
       const json = await res.json()
-      console.log("json", json)
       setItem(json)
-      console.log(json)
     } catch (err) {
       console.error(err)
     }
@@ -36,17 +35,20 @@ const App = () => {
 
   useEffect(() => {
     getData()
-  }, [])
+  })
 
   const postData = async (values: Omit<Items, "id">) => {
     try {
-      const res = await fetch(`http://localhost:8000/list`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      })
+      const res = await fetch(
+        `${import.meta.env.VITE_REACT_APP_SERVERURL}/list`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        }
+      )
       if (res.status === 200) {
         getData()
       }
@@ -57,13 +59,16 @@ const App = () => {
 
   const editData = async (values: Items) => {
     try {
-      const res = await fetch(`http://localhost:8000/list/${values.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      })
+      const res = await fetch(
+        `${import.meta.env.VITE_REACT_APP_SERVERURL}/list/${values.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        }
+      )
       if (res.status === 200) {
         getData()
       }
@@ -74,12 +79,15 @@ const App = () => {
 
   const deleteData = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:8000/list/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
+      const res = await fetch(
+        `${import.meta.env.VITE_REACT_APP_SERVERURL}/list/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
       if (res.status === 200) {
         getData()
       }
@@ -88,17 +96,13 @@ const App = () => {
     }
   }
 
-  const edited = (item: Items) => {
-    setEditItem(item)
-  }
-
   const renderItems = () => {
     return item?.map((item) => (
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex" }} key={`items_${item.id}`}>
         <span>
           {item.user_email} {item.title}
         </span>
-        <span onClick={() => edited(item)}>&nbsp; EDIT</span>
+        <span onClick={() => setEditItem(item)}>&nbsp; EDIT</span>
         <span onClick={() => deleteData(item.id)}>&nbsp; DELETE</span>
       </div>
     ))
@@ -106,28 +110,30 @@ const App = () => {
 
   return (
     <div>
-      <Formik
-        initialValues={initialValues}
-        enableReinitialize
-        onSubmit={(values, { resetForm }) => {
-          editItem ? editData(values) : postData(values)
-          resetForm()
-        }}
-      >
-        <Form>
-          <Field
-            id="user_email"
-            type="email"
-            name="user_email"
-            placeholder="User email"
-          />
-          <Field id="title" name="title" placeholder="Title" />
-          <Field id="progress" name="progress" placeholder="Progress" />
-          <Field id="date" name="date" placeholder="Date" />
-          <button type="submit">Submit</button>
-        </Form>
-      </Formik>
-      {renderItems()}
+      <>
+        <Formik
+          initialValues={initialValues}
+          enableReinitialize
+          onSubmit={(values, { resetForm }) => {
+            editItem ? editData(values) : postData(values)
+            resetForm()
+          }}
+        >
+          <Form>
+            <Field
+              id="user_email"
+              type="email"
+              name="user_email"
+              placeholder="User email"
+            />
+            <Field id="title" name="title" placeholder="Title" />
+            <Field id="progress" name="progress" placeholder="Progress" />
+            <Field id="date" name="date" placeholder="Date" />
+            <button type="submit">Submit</button>
+          </Form>
+        </Formik>
+        {renderItems()}
+      </>
     </div>
   )
 }

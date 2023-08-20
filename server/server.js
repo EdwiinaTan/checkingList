@@ -70,6 +70,12 @@ app.put("/list/:id", async (req, res) => {
   }
 })
 
+app.get("/logout", (req, res) => {
+  res.send("You have been logged out successfully")
+  res.clearCookie("Email")
+  res.clearCookie("AuthToken")
+})
+
 app.delete("/list/:id", async (req, res) => {
   const { id } = req.params
   try {
@@ -77,6 +83,51 @@ app.delete("/list/:id", async (req, res) => {
     res.json(removeItem)
   } catch (error) {
     console.error(err)
+  }
+})
+
+app.post("/signup", async (req, res) => {
+  const { email, password } = req.body
+  const salt = bcrypt.genSaltSync(10)
+  const hashedPassword = bcrypt.hashSync(password, salt)
+
+  try {
+    await pool.query(
+      "INSERT INTO users (email, hashed_password) VALUES ($1, $2)",
+      [email, hashedPassword]
+    )
+    const token = jwt.sign({ email }, "secret", { expiresIn: "1hr" })
+
+    res.json({ email, token })
+  } catch (error) {
+    if (error) {
+      res.json({ detail: error.detail })
+    }
+  }
+})
+
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body
+
+  try {
+    const user = await pool.query("SELECT * FROM users WHERE email=$1", [email])
+    if (!user.rows.length) {
+      return res.json({ detail: "User does not exist" })
+    }
+    const success = await bcrypt.compare(password, user.rows[0].hashed_password)
+
+    if (success) {
+      const token = jwt.sign({ email }, "secret", { expiresIn: "1hr" })
+
+      res.json({
+        email: user.rows[0].email,
+        token,
+      })
+    } else {
+      res.json({ detail: "Login fail" })
+    }
+  } catch (error) {
+    console.error(error)
   }
 })
 

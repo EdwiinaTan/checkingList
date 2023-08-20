@@ -19,23 +19,19 @@ const Auth = () => {
 
   console.log("cookie", cookie)
 
-  const handleSubmit = async (values: AuthProps) => {
-    console.log("value", values)
+  const signUpUser = async (values: Omit<AuthProps, "confirmPassword">) => {
     try {
-      const submitUser = await fetch(
+      const signup = await fetch(
         `${import.meta.env.VITE_REACT_APP_SERVERURL}/signup`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: values.email,
-            password: values.password,
-          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
         }
       )
-      const data = await submitUser.json()
-      console.log("data", data)
-
+      const data = await signup.json()
       if (data.detail) {
         setError(data.detail)
       } else {
@@ -47,15 +43,40 @@ const Auth = () => {
       console.error(error)
     }
   }
+
+  const loginUser = async (values: Omit<AuthProps, "confirmPassword">) => {
+    try {
+      const login = await fetch(
+        `${import.meta.env.VITE_REACT_APP_SERVERURL}/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        }
+      )
+      const data = await login.json()
+      if (data.detail) {
+        setError(data.detail)
+      } else {
+        setCookie("Email", data.email)
+        setCookie("AuthToken", data.token)
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   return (
     <>
       <h3>Sign up</h3>
       {error}
       <Formik
         initialValues={initialValues}
-        enableReinitialize
         onSubmit={(values, { resetForm }) => {
-          handleSubmit(values)
+          signUpUser(values)
           resetForm()
         }}
       >
@@ -66,12 +87,34 @@ const Auth = () => {
             type="password"
             name="password"
             placeholder="Password"
+            autoComplete="on"
           />
           <Field
             id="confirmPassword"
             type="password"
             name="confirmPassword"
             placeholder="Confirm password"
+            autoComplete="on"
+          />
+          <button type="submit">Submit</button>
+        </Form>
+      </Formik>
+      <h3>Login</h3>
+      <Formik
+        initialValues={initialValues}
+        onSubmit={(values, { resetForm }) => {
+          loginUser(values)
+          resetForm()
+        }}
+      >
+        <Form>
+          <Field id="email" type="email" name="email" placeholder="Email" />
+          <Field
+            id="password"
+            type="password"
+            name="password"
+            placeholder="Password"
+            autoComplete="on"
           />
           <button type="submit">Submit</button>
         </Form>

@@ -1,6 +1,8 @@
 import { Field, Form, Formik } from "formik"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+import { useCookies } from "react-cookie"
 import "./App.css"
+import Auth from "./Auth"
 
 export interface Items {
   id: string
@@ -11,31 +13,34 @@ export interface Items {
 }
 
 const App = () => {
+  const [cookie] = useCookies(undefined)
   const [item, setItem] = useState<Items[] | null>(null)
   const [editItem, setEditItem] = useState<Items | null>(null)
   const initialValues: Items = {
     id: editItem?.id || "",
-    user_email: editItem?.user_email || "",
+    user_email: editItem?.user_email || cookie.Email,
     title: editItem?.title || "",
     progress: editItem?.progress || 0,
     date: editItem?.date || "",
   }
 
-  const getData = async () => {
+  const getData = useCallback(async () => {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_REACT_APP_SERVERURL}/list`
+        `${import.meta.env.VITE_REACT_APP_SERVERURL}/list/${cookie.Email}`
       )
       const json = await res.json()
       setItem(json)
     } catch (err) {
       console.error(err)
     }
-  }
+  }, [cookie.Email])
 
   useEffect(() => {
-    getData()
-  })
+    if (cookie.AuthToken) {
+      getData()
+    }
+  }, [cookie.AuthToken, getData])
 
   const postData = async (values: Omit<Items, "id">) => {
     try {
@@ -77,6 +82,16 @@ const App = () => {
     }
   }
 
+  const signout = async () => {
+    const removeCookies = (name: string) => {
+      document.cookie =
+        name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
+    }
+    removeCookies("Email")
+    removeCookies("AuthToken")
+    window.location.reload()
+  }
+
   const deleteData = async (id: string) => {
     try {
       const res = await fetch(
@@ -98,7 +113,7 @@ const App = () => {
 
   const renderItems = () => {
     return item?.map((item) => (
-      <div style={{ display: "flex" }} key={`items_${item.id}`}>
+      <div style={{ display: "flex" }} key={`item_${item.id}`}>
         <span>
           {item.user_email} {item.title}
         </span>
@@ -110,30 +125,35 @@ const App = () => {
 
   return (
     <div>
-      <>
-        <Formik
-          initialValues={initialValues}
-          enableReinitialize
-          onSubmit={(values, { resetForm }) => {
-            editItem ? editData(values) : postData(values)
-            resetForm()
-          }}
-        >
-          <Form>
-            <Field
-              id="user_email"
-              type="email"
-              name="user_email"
-              placeholder="User email"
-            />
-            <Field id="title" name="title" placeholder="Title" />
-            <Field id="progress" name="progress" placeholder="Progress" />
-            <Field id="date" name="date" placeholder="Date" />
-            <button type="submit">Submit</button>
-          </Form>
-        </Formik>
-        {renderItems()}
-      </>
+      {cookie.AuthToken ? (
+        <>
+          <button onClick={() => signout()}>Sign out </button>
+          <Formik
+            initialValues={initialValues}
+            enableReinitialize
+            onSubmit={(values, { resetForm }) => {
+              editItem ? editData(values) : postData(values)
+              resetForm()
+            }}
+          >
+            <Form>
+              <Field
+                id="user_email"
+                type="email"
+                name="user_email"
+                placeholder="User email"
+              />
+              <Field id="title" name="title" placeholder="Title" />
+              <Field id="progress" name="progress" placeholder="Progress" />
+              <Field id="date" name="date" placeholder="Date" />
+              <button type="submit">Submit</button>
+            </Form>
+          </Formik>
+          {renderItems()}
+        </>
+      ) : (
+        <Auth />
+      )}
     </div>
   )
 }

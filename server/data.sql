@@ -12,3 +12,7 @@ CREATE TABLE users (
   email VARCHAR(255) PRIMARY KEY,
   hashed_password VARCHAR(255)
 );
+
+INSERT INTO
+  list (id, user_email, title, progress, date)
+  VALUES (1, 'test@test.com', 'holiday', 3, '19/09/23');

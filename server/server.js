@@ -5,6 +5,9 @@ const cors = require("cors")
 const app = express()
 const pool = require("./db")
 
+const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
+
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -43,7 +46,7 @@ app.post("/list", async (req, res) => {
 
   try {
     const newList = await pool.query(
-      "INSERT INTO list(id, user_email, title, progress, date) VALUES ($1, $2, $3, $4, $5)",
+      "INSERT INTO list (id, user_email, title, progress, date) VALUES ($1, $2, $3, $4, $5)",
       [id, user_email, title, progress, date]
     )
     console.log("newList", newList)

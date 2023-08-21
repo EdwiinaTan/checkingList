@@ -131,4 +131,16 @@ app.post("/login", async (req, res) => {
   }
 })
 
+require("./routes/company.routes")(app)
+
+const db = require("./models")
+db.sequelize
+  .sync()
+  .then(() => {
+    console.log("Synced db.")
+  })
+  .catch((err) => {
+    console.log("Failed to sync db: " + err.message)
+  })
+
 app.listen(PORT, () => console.log(`Server port: ${PORT}`))

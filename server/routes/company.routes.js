@@ -1,20 +1,19 @@
-module.exports = (app) => {
-  const companies = require("../controllers/company.controller.js")
+const companies = require("../controllers/company.controller.js")
+const CompaniesRouter = require("express").Router()
 
-  const router = require("express").Router()
+// Create a new Company
+CompaniesRouter.post("/addCompany", companies.create)
 
-  // Create a new Company
-  router.post("/addCompany", companies.create)
+// Retrieve all Companies
+CompaniesRouter.get("/getCompanies", companies.findAll)
 
-  // Retrieve all Companies
-  router.get("/getCompanies", companies.findAll)
+// Retrieve a single Company with id
+CompaniesRouter.get("/getCompany/:id", companies.findOne)
 
-  // Retrieve a single Company with id
-  router.get("/getCompany/:id", companies.findOne)
+// Update a Company with id
+CompaniesRouter.put("/updateCompany/:id", companies.update)
 
-  // Update a Company with id
-  router.put("/updateCompany/:id", companies.update)
+// Delete a Company with id
+CompaniesRouter.delete("/deleteCompany/:id", companies.delete)
 
-  // Delete a Company with id
-  router.delete("/deleteCompany/:id", companies.delete)
-}
+export default CompaniesRouter

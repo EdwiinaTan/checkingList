@@ -142,6 +142,5 @@ db.sequelize
     console.log("Failed to sync db: " + err.message)
   })
 
-app.use("/companies", CompaniesRouter)
-
+require("./routes/company.routes")(app)
 app.listen(PORT, () => console.log(`Server port: ${PORT}`))

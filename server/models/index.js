@@ -20,6 +20,6 @@ const db = {}
 db.Sequelize = Sequelize
 db.sequelize = sequelize
 
-db.tutorials = require("./company.model.js")(sequelize, Sequelize)
+db.companies = require("./company.model.js")(sequelize)
 
 module.exports = db

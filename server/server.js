@@ -42,7 +42,6 @@ app.get("/list/:userEmail", async (req, res) => {
 app.post("/list", async (req, res) => {
   const { user_email, title, progress, date } = req.body
   const id = uuidv4()
-  console.log("req.body", req.body)
 
   try {
     const newList = await pool.query(
@@ -92,13 +91,22 @@ app.post("/signup", async (req, res) => {
   const hashedPassword = bcrypt.hashSync(password, salt)
 
   try {
-    await pool.query(
-      "INSERT INTO users (email, hashed_password) VALUES ($1, $2)",
-      [email, hashedPassword]
+    const userAlreadyExist = await pool.query(
+      "SELECT * FROM users WHERE email=$1",
+      [email]
     )
-    const token = jwt.sign({ email }, "secret", { expiresIn: "1hr" })
-
-    res.json({ email, token })
+    if (userAlreadyExist) {
+      res.status(400).send({
+        message: "Email already exist",
+      })
+    } else {
+      await pool.query(
+        "INSERT INTO users (email, hashed_password) VALUES ($1, $2)",
+        [email, hashedPassword]
+      )
+      const token = jwt.sign({ email }, "secret", { expiresIn: "1hr" })
+      res.json({ email, token })
+    }
   } catch (error) {
     if (error) {
       res.json({ detail: error.detail })

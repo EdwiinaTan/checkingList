@@ -31,7 +31,12 @@ const Auth = () => {
           body: JSON.stringify(values),
         }
       )
+
       const data = await signup.json()
+      if (signup.status === 400) {
+        setError(data.message)
+        return
+      }
       if (data.detail) {
         setError(data.detail)
       } else {
@@ -81,9 +86,14 @@ const Auth = () => {
         }}
       >
         <Form>
-          <Field id="email" type="email" name="email" placeholder="Email" />
           <Field
-            id="password"
+            id="emailSignUp"
+            type="email"
+            name="email"
+            placeholder="Email"
+          />
+          <Field
+            id="passwordSignUp"
             type="password"
             name="password"
             placeholder="Password"
@@ -108,9 +118,14 @@ const Auth = () => {
         }}
       >
         <Form>
-          <Field id="email" type="email" name="email" placeholder="Email" />
           <Field
-            id="password"
+            id="emailLogin"
+            type="email"
+            name="email"
+            placeholder="Email"
+          />
+          <Field
+            id="passwordLogin"
             type="password"
             name="password"
             placeholder="Password"

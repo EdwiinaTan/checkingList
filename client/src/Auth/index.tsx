@@ -62,8 +62,9 @@ const Auth = () => {
         }
       )
       const data = await login.json()
-      if (data.detail) {
-        setError(data.detail)
+      if (login.status === 400) {
+        setError(data.message)
+        return
       } else {
         setCookie("Email", data.email)
         setCookie("AuthToken", data.token)

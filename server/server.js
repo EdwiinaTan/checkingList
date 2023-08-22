@@ -48,7 +48,6 @@ app.post("/list", async (req, res) => {
       "INSERT INTO list (id, user_email, title, progress, date) VALUES ($1, $2, $3, $4, $5)",
       [id, user_email, title, progress, date]
     )
-    console.log("newList", newList)
     res.json(newList)
   } catch (err) {
     console.error(err)
@@ -119,20 +118,24 @@ app.post("/login", async (req, res) => {
 
   try {
     const user = await pool.query("SELECT * FROM users WHERE email=$1", [email])
+    console.log("user", user)
     if (!user.rows.length) {
-      return res.json({ detail: "User does not exist" })
+      res.status(400).send({
+        message: "Login fail, retry",
+      })
     }
     const success = await bcrypt.compare(password, user.rows[0].hashed_password)
 
     if (success) {
       const token = jwt.sign({ email }, "secret", { expiresIn: "1hr" })
-
       res.json({
         email: user.rows[0].email,
         token,
       })
     } else {
-      res.json({ detail: "Login fail" })
+      res.status(400).send({
+        message: "Login fail, retry",
+      })
     }
   } catch (error) {
     console.error(error)
